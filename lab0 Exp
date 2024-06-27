@@ -1,0 +1,7 @@
+# lab0 Experiences:
+0. Get the idea of lab0, including Trie, Copy On Write.
+1. C++ smart pointer. Self management.
+2. Template and std::move for convenient movement of T
+3. The update of a Trie. When and How.
+4. Special check for HeadPtr and TailPtr
+5. Read more source code and you will SEE.
