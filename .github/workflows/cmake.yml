@@ -29,10 +29,10 @@ jobs:
           - {
               name: "Ubuntu 22.04 Clang",
               os: "ubuntu-22.04",
-              cc: "/usr/bin/clang-14",
-              cxx: "/usr/bin/clang++-14",
-              format: "/usr/bin/clang-format-14",
-              tidy: "/usr/bin/clang-tidy-14",
+              cc: "/usr/bin/clang-12",
+              cxx: "/usr/bin/clang++-12",
+              format: "/usr/bin/clang-format-12",
+              tidy: "/usr/bin/clang-tidy-12",
             }
           - {
               name: "macOS 12 (Monterey) AppleClang",

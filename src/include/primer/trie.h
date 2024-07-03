@@ -8,13 +8,14 @@
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 namespace bustub {
 
-/// A special type that will block the move constructor and move assignment operator. Used in TrieStore tests.
+// A special type that will block the move constructor and move assignment operator. Used in TrieStore tests.
 class MoveBlocked {
  public:
   explicit MoveBlocked(std::future<int> wait) : wait_(std::move(wait)) {}
@@ -86,7 +87,6 @@ class TrieNodeWithValue : public TrieNode {
   }
 
   // Override the Clone method to also clone the value.
-  //
   // Note: if you want to convert `unique_ptr` into `shared_ptr`, you can use `std::shared_ptr<T>(std::move(ptr))`.
   auto Clone() const -> std::unique_ptr<TrieNode> override {
     return std::make_unique<TrieNodeWithValue<T>>(children_, value_);
@@ -104,7 +104,7 @@ class TrieNodeWithValue : public TrieNode {
 class Trie {
  private:
   // The root of the trie.
-  std::shared_ptr<const TrieNode> root_{nullptr};
+  std::shared_ptr<const TrieNode> root_{new const TrieNode()};
 
   // Create a new trie with the given root.
   explicit Trie(std::shared_ptr<const TrieNode> root) : root_(std::move(root)) {}

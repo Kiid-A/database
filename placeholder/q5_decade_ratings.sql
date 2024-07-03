@@ -1,0 +1,1 @@
+select ((t.premiered / 10) * 10) || 's' as decade, round(avg(r.rating), 1) as avg_rating, max(r.rating) as max_rating, min(r.rating) as min_rating, count(*) from titles t, ratings r where r.title_id = t.title_id and decade not null group by decade order by avg_rating desc, decade asc;
