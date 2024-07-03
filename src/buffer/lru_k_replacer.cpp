@@ -57,8 +57,8 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool
             node_store_.erase(fid);
             new_node.remove(*it);
             *frame_id = fid;
-            debug
-            p
+            // debug
+            // p
             return true;
         }
     }    
@@ -71,8 +71,8 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool
             node_store_.erase(fid);
             cached_node.remove(*it);
             *frame_id = fid;
-            debug
-            p
+            // debug
+            // p
             return true;
         }
     }
@@ -140,11 +140,8 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType
         }
     }
 
-    debugS
-    for (auto it : new_node) {
-        printf("id: %d k: %lu ", it.first, it.second);
-    }
-    printf("\n");
+    // debugS
+    // p
 }
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) 
@@ -162,16 +159,16 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable)
     // there are 2 conditions that size shall be changed: TF->- FT->+
     if (status && !set_evictable) {
         curr_size_--;
-        replacer_size_--;
+        // replacer_size_--;
     }
 
     if (!status && set_evictable) {
         curr_size_++;
-        replacer_size_++;
+        // replacer_size_++;
     }
 
-    debugS
-    p
+    // debugS
+    // p
 }
 
 void LRUKReplacer::Remove(frame_id_t frame_id) 
@@ -190,6 +187,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id)
     auto node = node_store_[frame_id];
     auto kth_time = node.getKthTime(k_);
     if (!node.isEvictable()) {
+        printf("evict exception fid: %d\n", frame_id);
         throw std::exception();
     }
 

@@ -88,6 +88,7 @@ class Page {
   /** The ID of this page. */
   page_id_t page_id_ = INVALID_PAGE_ID;
   /** The pin count of this page. */
+  // update pin when access or unpin
   int pin_count_ = 0;
   /** True if the page is dirty, i.e. it is different from its corresponding page on disk. */
   bool is_dirty_ = false;
