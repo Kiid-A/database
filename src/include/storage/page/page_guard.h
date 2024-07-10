@@ -106,7 +106,7 @@ class BasicPageGuard {
   friend class ReadPageGuard;
   friend class WritePageGuard;
 
-  [[maybe_unused]] BufferPoolManager *bpm_{nullptr};
+  [[]] BufferPoolManager *bpm_{nullptr};
   Page *page_{nullptr};
   bool is_dirty_{false};
 };
@@ -228,6 +228,9 @@ class WritePageGuard {
 
   auto GetDataMut() -> char * { return guard_.GetDataMut(); }
 
+  /**
+   * Mutable guard. For Write abviously
+   */
   template <class T>
   auto AsMut() -> T * {
     return guard_.AsMut<T>();

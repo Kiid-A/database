@@ -14,6 +14,7 @@
  *  1. Pay attention to when and how every variable updates
  *  2. Get used to basic fnc in class
  *  3. Mind the W/R bool, do not get overwhelmed
+ *  4. Read TODO carefully
  */
 
 #include "buffer/buffer_pool_manager.h"
@@ -24,7 +25,7 @@
 #include "storage/page/page_guard.h"
 
 #define deb for (auto it = page_table_.begin(); it != page_table_.end(); it++) { \
-              printf("pgt: page_id %d frame_id %d\n", it->first, it->second); \
+              printf("fetch pgt: page_id %d frame_id %d\n", it->first, it->second); \
             } \
             printf("\n");
 
@@ -99,20 +100,17 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page *
 
 auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType access_type) -> Page * 
 { 
-  deb
   if (page_id == INVALID_PAGE_ID) {
     return nullptr;
   }
-
   std::scoped_lock lock(latch_);
   // from page table. Remember to update replacer
   if (page_table_.find(page_id) != page_table_.end()) {
     auto frame_id = page_table_[page_id];
-    auto page = pages_ + frame_id;
+    auto page = pages_ + frame_id;  
 
     replacer_->RecordAccess(frame_id);
     replacer_->SetEvictable(frame_id, false);
-
     page->pin_count_ += 1;
     return page;
   }
@@ -144,7 +142,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id, [[maybe_unused]] AccessType
     page->is_dirty_ = false;
   }
 
-  // gotta replace the old frame in both buffer and disk
+  // gotta replace the old frame in buffer
   page_table_.erase(page->GetPageId());
   page_table_.emplace(page_id, frame_id);
   page->page_id_ = page_id;
@@ -278,12 +276,33 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool
 
 auto BufferPoolManager::AllocatePage() -> page_id_t { return next_page_id_++; }
 
-auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard { 
+  auto page = FetchPage(page_id);
+  return {this, page}; 
+}
 
-auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
+  auto page = FetchPage(page_id);
+  if (page != nullptr) {
+    page->RLatch();
+  }
+  printf("fetch read %d\n", page_id); 
+  return {this, page}; 
+}
 
-auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard { return {this, nullptr}; }
+auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard { 
+  printf("fetch page write %d\n", page_id);
+  auto page = FetchPage(page_id);
+  if (page != nullptr) {
+    page->WLatch();
+  }
+  
+  return {this, page}; 
+}
 
-auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard { return {this, nullptr}; }
+auto BufferPoolManager::NewPageGuarded(page_id_t *page_id) -> BasicPageGuard { 
+  auto page = NewPage(page_id);
+  return {this, page}; 
+}
 
 }  // namespace bustub

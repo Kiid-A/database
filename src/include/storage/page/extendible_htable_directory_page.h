@@ -21,6 +21,7 @@
 
 #include <cassert>
 #include <climits>
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 
@@ -190,9 +191,13 @@ class ExtendibleHTableDirectoryPage {
   void PrintDirectory() const;
 
  private:
+  /* 2^n = max depth, n stands for binary sequence of prefix */
   uint32_t max_depth_;
+  /* current size of directory */
   uint32_t global_depth_;
+  /* size of bucket */
   uint8_t local_depths_[HTABLE_DIRECTORY_ARRAY_SIZE];
+  /* bucket page id */
   page_id_t bucket_page_ids_[HTABLE_DIRECTORY_ARRAY_SIZE];
 };
 
