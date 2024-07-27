@@ -1,0 +1,83 @@
+Determining if the function dwarf_producer_init_c exists failed with the following output:
+Change Dir: /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-kcelHL
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_b2b75/fast && /usr/bin/make  -f CMakeFiles/cmTC_b2b75.dir/build.make CMakeFiles/cmTC_b2b75.dir/build
+make[1]: Entering directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-kcelHL'
+Building C object CMakeFiles/cmTC_b2b75.dir/CheckFunctionExists.c.o
+/usr/bin/cc  -I/usr/include/libdwarf -DCHECK_FUNCTION_EXISTS=dwarf_producer_init_c -std=c++0x -fPIE -o CMakeFiles/cmTC_b2b75.dir/CheckFunctionExists.c.o -c /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-kcelHL/CheckFunctionExists.c
+cc1: warning: command line option ‘-std=c++11’ is valid for C++/ObjC++ but not for C
+Linking C executable cmTC_b2b75
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b2b75.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=dwarf_producer_init_c -std=c++0x CMakeFiles/cmTC_b2b75.dir/CheckFunctionExists.c.o -o cmTC_b2b75  /usr/lib/x86_64-linux-gnu/libdwarf.so /usr/lib/x86_64-linux-gnu/libelf.so 
+/usr/bin/ld: CMakeFiles/cmTC_b2b75.dir/CheckFunctionExists.c.o: in function `main':
+CheckFunctionExists.c:(.text+0x14): undefined reference to `dwarf_producer_init_c'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_b2b75.dir/build.make:101: cmTC_b2b75] Error 1
+make[1]: Leaving directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-kcelHL'
+make: *** [Makefile:127: cmTC_b2b75/fast] Error 2
+
+
+
+Performing C SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
+Change Dir: /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-w8xufL
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_e574e/fast && /usr/bin/make  -f CMakeFiles/cmTC_e574e.dir/build.make CMakeFiles/cmTC_e574e.dir/build
+make[1]: Entering directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-w8xufL'
+Building C object CMakeFiles/cmTC_e574e.dir/src.c.o
+/usr/bin/cc -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++0x -fPIE -o CMakeFiles/cmTC_e574e.dir/src.c.o -c /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-w8xufL/src.c
+cc1: warning: command line option ‘-std=c++11’ is valid for C++/ObjC++ but not for C
+Linking C executable cmTC_e574e
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_e574e.dir/link.txt --verbose=1
+/usr/bin/cc  -std=c++0x CMakeFiles/cmTC_e574e.dir/src.c.o -o cmTC_e574e 
+/usr/bin/ld: CMakeFiles/cmTC_e574e.dir/src.c.o: in function `main':
+src.c:(.text+0x46): undefined reference to `pthread_create'
+/usr/bin/ld: src.c:(.text+0x52): undefined reference to `pthread_detach'
+/usr/bin/ld: src.c:(.text+0x5e): undefined reference to `pthread_cancel'
+/usr/bin/ld: src.c:(.text+0x6f): undefined reference to `pthread_join'
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_e574e.dir/build.make:99: cmTC_e574e] Error 1
+make[1]: Leaving directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-w8xufL'
+make: *** [Makefile:127: cmTC_e574e/fast] Error 2
+
+
+Source file was:
+#include <pthread.h>
+
+static void* test_func(void* data)
+{
+  return data;
+}
+
+int main(void)
+{
+  pthread_t thread;
+  pthread_create(&thread, NULL, test_func, NULL);
+  pthread_detach(thread);
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+  pthread_atfork(NULL, NULL, NULL);
+  pthread_exit(NULL);
+
+  return 0;
+}
+
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-d431lK
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_5984b/fast && /usr/bin/make  -f CMakeFiles/cmTC_5984b.dir/build.make CMakeFiles/cmTC_5984b.dir/build
+make[1]: Entering directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-d431lK'
+Building C object CMakeFiles/cmTC_5984b.dir/CheckFunctionExists.c.o
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create -std=c++0x -fPIE -o CMakeFiles/cmTC_5984b.dir/CheckFunctionExists.c.o -c /root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-d431lK/CheckFunctionExists.c
+cc1: warning: command line option ‘-std=c++11’ is valid for C++/ObjC++ but not for C
+Linking C executable cmTC_5984b
+/usr/local/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5984b.dir/link.txt --verbose=1
+/usr/bin/cc  -DCHECK_FUNCTION_EXISTS=pthread_create -std=c++0x CMakeFiles/cmTC_5984b.dir/CheckFunctionExists.c.o -o cmTC_5984b  -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: error: ld returned 1 exit status
+make[1]: *** [CMakeFiles/cmTC_5984b.dir/build.make:99: cmTC_5984b] Error 1
+make[1]: Leaving directory '/root/CSDIY/database/build_support/CMakeFiles/CMakeScratch/TryCompile-d431lK'
+make: *** [Makefile:127: cmTC_5984b/fast] Error 2
+
+
+

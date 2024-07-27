@@ -1,0 +1,5 @@
+if(EXISTS "/root/CSDIY/database/build_support/test/rwlatch_test[1]_tests.cmake")
+  include("/root/CSDIY/database/build_support/test/rwlatch_test[1]_tests.cmake")
+else()
+  add_test(rwlatch_test_NOT_BUILT rwlatch_test_NOT_BUILT)
+endif()

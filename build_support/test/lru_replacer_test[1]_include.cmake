@@ -1,0 +1,5 @@
+if(EXISTS "/root/CSDIY/database/build_support/test/lru_replacer_test[1]_tests.cmake")
+  include("/root/CSDIY/database/build_support/test/lru_replacer_test[1]_tests.cmake")
+else()
+  add_test(lru_replacer_test_NOT_BUILT lru_replacer_test_NOT_BUILT)
+endif()

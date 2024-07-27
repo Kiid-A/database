@@ -24,6 +24,8 @@
 #include "execution/expressions/abstract_expression.h"
 #include "execution/plans/aggregation_plan.h"
 #include "storage/table/tuple.h"
+#include "type/type.h"
+#include "type/type_id.h"
 #include "type/value_factory.h"
 
 namespace bustub {
@@ -70,14 +72,55 @@ class SimpleAggregationHashTable {
    * @param[out] result The output aggregate value
    * @param input The input value
    */
+  // value factory is that we abstract value type and operation as methods. which is more stable.
   void CombineAggregateValues(AggregateValue *result, const AggregateValue &input) {
     for (uint32_t i = 0; i < agg_exprs_.size(); i++) {
+      Value &old_val = result->aggregates_[i];
+      const Value &new_val = input.aggregates_[i];
       switch (agg_types_[i]) {
+        // this counts anything including NULL
         case AggregationType::CountStarAggregate:
+          old_val = old_val.Add(Value{TypeId::INTEGER, 1});
+          break;
+
+        // old_val += 1 if not null
         case AggregationType::CountAggregate:
+          if (!new_val.IsNull()) {
+            if (old_val.IsNull()) {
+              old_val = ValueFactory::GetIntegerValue(0);
+            }
+            old_val = old_val.Add(Value{TypeId::INTEGER, 1});
+          }
+          break;
+
         case AggregationType::SumAggregate:
+          if (!new_val.IsNull()) {
+            if (old_val.IsNull()) {
+              old_val = new_val;
+            } else {
+              old_val = old_val.Add(new_val);
+            }
+          }
+          break;
+
         case AggregationType::MinAggregate:
+          if (!new_val.IsNull()) {
+            if (old_val.IsNull()) {
+              old_val = new_val;
+            } else {
+              old_val = old_val.CompareGreaterThan(new_val) == CmpBool::CmpTrue ? new_val : old_val.Copy();
+            }
+          }
+          break;
+
         case AggregationType::MaxAggregate:
+          if (!new_val.IsNull()) {
+            if (old_val.IsNull()) {
+              old_val = new_val;
+            } else {
+              old_val = old_val.CompareLessThan(new_val) == CmpBool::CmpTrue ? new_val : old_val.Copy();
+            }
+          }
           break;
       }
     }
@@ -204,8 +247,13 @@ class AggregationExecutor : public AbstractExecutor {
 
   /** Simple aggregation hash table */
   // TODO(Student): Uncomment SimpleAggregationHashTable aht_;
+  std::unique_ptr<SimpleAggregationHashTable> aht_;
 
   /** Simple aggregation hash table iterator */
   // TODO(Student): Uncomment SimpleAggregationHashTable::Iterator aht_iterator_;
+  std::unique_ptr<SimpleAggregationHashTable::Iterator> aht_iterator_;
+  // 聚合后处理数据，比如AVG, SUM..
+
+  bool has_inserted_;
 };
 }  // namespace bustub

@@ -1,0 +1,5 @@
+if(EXISTS "/root/CSDIY/database/build_support/test/trie_noncopy_test[1]_tests.cmake")
+  include("/root/CSDIY/database/build_support/test/trie_noncopy_test[1]_tests.cmake")
+else()
+  add_test(trie_noncopy_test_NOT_BUILT trie_noncopy_test_NOT_BUILT)
+endif()

@@ -17,6 +17,7 @@
 #include <mutex>  // NOLINT
 #include <unordered_map>
 #include <vector>
+#include <utility>
 
 #include "common/config.h"
 #include "common/macros.h"
@@ -25,15 +26,46 @@ namespace bustub {
 
 enum class AccessType { Unknown = 0, Lookup, Scan, Index };
 
+// only in node scope
 class LRUKNode {
  private:
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
 
-  [[maybe_unused]] std::list<size_t> history_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] frame_id_t fid_;
-  [[maybe_unused]] bool is_evictable_{false};
+  std::list<size_t> history_;  // for futher query
+  size_t k_;                   // shall be updated in delete and insert
+  frame_id_t fid_;             // which frame
+  bool is_evictable_{true};    // update each scan? no latch to it
+
+ public:
+  LRUKNode() : k_(1) {}
+
+  LRUKNode(frame_id_t fid, size_t t, size_t k) : k_(k), fid_(fid), is_evictable_(true) { history_.emplace_front(t); }
+
+  LRUKNode(frame_id_t fid, size_t t) : k_(1), fid_(fid), is_evictable_(true) { history_.emplace_front(t); }
+
+  bool isEvictable() { return is_evictable_; }
+
+  size_t getK() { return k_; }
+
+  frame_id_t getFid() { return fid_; }
+
+  size_t getKthTime(size_t k) {
+    auto it = history_.begin();
+    std::advance(it, k - 1);
+    return *it;
+  }
+
+  size_t getEarliest() {
+    // return *history_.end();
+    return *history_.begin();
+  }
+
+  void setEvictable(bool e) { is_evictable_ = e; }
+
+  void setTimestamp(size_t t) { history_.emplace_front(t); }
+
+  void setK(size_t k) { k_ = k; }
 };
 
 /**
@@ -48,6 +80,8 @@ class LRUKNode {
  * classical LRU algorithm is used to choose victim.
  */
 class LRUKReplacer {
+  using frame_k = std::pair<frame_id_t, size_t>;
+
  public:
   /**
    *
@@ -57,6 +91,8 @@ class LRUKReplacer {
    * @param num_frames the maximum number of frames the LRUReplacer will be required to store
    */
   explicit LRUKReplacer(size_t num_frames, size_t k);
+
+  static bool Cmp(frame_k f_1, frame_k f_2);
 
   DISALLOW_COPY_AND_MOVE(LRUKReplacer);
 
@@ -84,6 +120,11 @@ class LRUKReplacer {
    * @return true if a frame is evicted successfully, false if no frames can be evicted.
    */
   auto Evict(frame_id_t *frame_id) -> bool;
+  /** my thought:
+   *  0. get latched!
+   *  1. select frame: inf first, then k, return false if not
+   *  2. delete it and update structure
+   */
 
   /**
    * TODO(P1): Add implementation
@@ -150,12 +191,13 @@ class LRUKReplacer {
  private:
   // TODO(student): implement me! You can replace these member variables as you like.
   // Remove maybe_unused if you start using them.
-  [[maybe_unused]] std::unordered_map<frame_id_t, LRUKNode> node_store_;
-  [[maybe_unused]] size_t current_timestamp_{0};
-  [[maybe_unused]] size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
-  [[maybe_unused]] size_t k_;
-  [[maybe_unused]] std::mutex latch_;
+  std::unordered_map<frame_id_t, LRUKNode> node_store_;  // id to node, only for buffered page
+  std::list<frame_k> new_node;     // to maintain a good list, we need binary search to sort timestamp
+  std::list<frame_k> cached_node;  // we also need a total record
+  size_t current_timestamp_{0};    // current timestamp you know that.
+  size_t curr_size_{0};
+  size_t replacer_size_;  // capacity
+  size_t k_;
+  std::mutex latch_;
 };
-
 }  // namespace bustub

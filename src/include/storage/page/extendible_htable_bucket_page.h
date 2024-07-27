@@ -126,6 +126,8 @@ class ExtendibleHTableBucketPage {
    */
   auto IsEmpty() const -> bool;
 
+  void Clear();
+
   /**
    * Prints the bucket's occupancy information
    */
