@@ -39,7 +39,11 @@ auto LRUKReplacer::Cmp(const frame_k f_1, const frame_k f_2) -> bool { return f_
 
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
   std::lock_guard<std::mutex> lock(latch_);
-  current_timestamp_++;
+  // current_timestamp_++;
+
+  if (curr_size_ == 0) {
+    return false;
+  }
 
   for (auto it = new_node.begin(); it != new_node.end(); it++) {
     auto fid = it->first;
@@ -51,7 +55,7 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
       new_node.remove(*it);
       *frame_id = fid;
       // debug
-      // p
+      printf("evict new: %d\n", fid);
       return true;
     }
   }
@@ -66,6 +70,11 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
       *frame_id = fid;
       // debug
       // p
+      printf("evict old: %d\n", fid);
+      for (auto it : cached_node) {
+        printf("id: %d k: %lu ", it.first, it.second);
+      }
+      printf("\n");
       return true;
     }
   }
@@ -93,42 +102,59 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType
     // new_node.push_front(frame_id);
     node_store_[frame_id].setTimestamp(current_timestamp_);
     frame_k target(frame_id, 1);
-    auto it = std::upper_bound(new_node.begin(), new_node.end(), target, Cmp);
-    new_node.insert(it, target);
+    // auto it = std::upper_bound(new_node.begin(), new_node.end(), target, Cmp);
+    // new_node.insert(it, target);
+    new_node.push_back(target);
 
     curr_size_++;
+    printf("insert new: %d\n", frame_id);
 
   } else {
+    node_store_[frame_id].incK();
     // add it to cached_node if cnt == k, or update its position in cached_node
     size_t cntK = node_store_[frame_id].getK();
-    if (cntK < k_) {
-      node_store_[frame_id].setK(cntK + 1);
-      node_store_[frame_id].setTimestamp(current_timestamp_);
-      size_t k = node_store_[frame_id].getK();
-      frame_k target(frame_id, k);
-      new_node.remove(frame_k(frame_id, cntK));
+    node_store_[frame_id].setTimestamp(current_timestamp_);
+    // if (cntK < k_) {
+    //   node_store_[frame_id].setK(cntK + 1);
+    //   node_store_[frame_id].setTimestamp(current_timestamp_);
+    //   size_t k = node_store_[frame_id].getK();
+    //   frame_k target(frame_id, k);
+    //   new_node.remove(frame_k(frame_id, cntK));
 
-      auto it = std::upper_bound(new_node.begin(), new_node.end(), target, Cmp);
-      new_node.insert(it, target);
+    //   auto it = std::upper_bound(new_node.begin(), new_node.end(), target, Cmp);
+    //   new_node.insert(it, target);
+    //   printf("update: %d\n", frame_id);
 
-    } else if (cntK == k_) {
-      node_store_[frame_id].setK(cntK + 1);
-      node_store_[frame_id].setTimestamp(current_timestamp_);
-      frame_k target(frame_id, cntK + 1);
-      new_node.remove(frame_k(frame_id, cntK));
+    // } else
+    if (cntK == k_) {
+      // node_store_[frame_id].setK(cntK);
+      // node_store_[frame_id].setTimestamp(current_timestamp_);
+      frame_k target(frame_id, current_timestamp_);
+      // auto iter = new_node.begin();
+      // for (; iter->first != frame_id; iter++);
+      // printf("to erase k: %lu\n", iter->second);
+      new_node.remove(frame_k{frame_id, size_t(1)});
 
       // put it on list according to its Kth timestamp
       auto it = std::upper_bound(cached_node.begin(), cached_node.end(), target, Cmp);
       cached_node.insert(it, target);
+      // printf("lvl up: %d\n", frame_id);
 
     } else if (cntK > k_) {
-      node_store_[frame_id].setK(cntK + 1);
-      node_store_[frame_id].setTimestamp(current_timestamp_);
-      frame_k target(frame_id, cntK + 1);
-      cached_node.remove(frame_k(frame_id, cntK));
+      // node_store_[frame_id].setK(cntK);
+      node_store_[frame_id].eraseTimestamp();
+      // auto last_time = node_store_[frame_id].getLastTimestamp(); 
+      // node_store_[frame_id].setTimestamp(current_timestamp_);
+      frame_k target(frame_id, current_timestamp_);
+      
+      auto iter = cached_node.begin();
+      for (; iter->first != frame_id; iter++);
+      // printf("to erase k: %lu while %lu\n", iter->second, last_time);
+      cached_node.erase(iter);
 
       auto it = std::upper_bound(cached_node.begin(), cached_node.end(), target, Cmp);
       cached_node.insert(it, target);
+      // printf("update old: %d\n", frame_id);
     }
   }
 
@@ -138,11 +164,13 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id, [[maybe_unused]] AccessType
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
   std::lock_guard<std::mutex> lock(latch_);
-  current_timestamp_++;
+  // current_timestamp_++;
 
   if (!node_store_.count(frame_id)) {
     return;
   }
+
+  // printf("set %d %d\n", frame_id, set_evictable);
 
   auto status = node_store_[frame_id].isEvictable();
   node_store_[frame_id].setEvictable(set_evictable);
@@ -164,7 +192,7 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
 
 void LRUKReplacer::Remove(frame_id_t frame_id) {
   std::lock_guard<std::mutex> lock(latch_);
-  current_timestamp_++;
+  // current_timestamp_++;
 
   if (frame_id > static_cast<frame_id_t>(replacer_size_)) {
     throw std::exception();
@@ -191,7 +219,7 @@ void LRUKReplacer::Remove(frame_id_t frame_id) {
   curr_size_--;
   node_store_.erase(frame_id);
 
-  debugS p
+  // debugS p
 }
 
 auto LRUKReplacer::Size() -> size_t { return curr_size_; }

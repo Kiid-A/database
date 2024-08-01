@@ -248,7 +248,7 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
     auto frame_id = page_table_[page_id];
     auto page = pages_ + frame_id;
 
-    if (page->GetPinCount() != 0) {
+    if (page->GetPinCount() > 0) {
       return false;
     }
 

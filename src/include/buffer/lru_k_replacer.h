@@ -48,17 +48,25 @@ class LRUKNode {
 
   size_t getK() { return k_; }
 
+  void incK() { k_++; }
+
   frame_id_t getFid() { return fid_; }
 
   size_t getKthTime(size_t k) {
-    auto it = history_.begin();
-    std::advance(it, k - 1);
-    return *it;
+    return *history_.begin();
+  }
+
+  void eraseTimestamp() {
+    history_.pop_back();
   }
 
   size_t getEarliest() {
     // return *history_.end();
     return *history_.begin();
+  }
+
+  size_t getLastTimestamp() {
+    return *(history_.begin()++);
   }
 
   void setEvictable(bool e) { is_evictable_ = e; }
@@ -79,7 +87,9 @@ class LRUKNode {
  * +inf as its backward k-distance. When multiple frames have +inf backward k-distance,
  * classical LRU algorithm is used to choose victim.
  */
+
 class LRUKReplacer {
+  // fid + timestamp
   using frame_k = std::pair<frame_id_t, size_t>;
 
  public:
@@ -194,7 +204,7 @@ class LRUKReplacer {
   std::unordered_map<frame_id_t, LRUKNode> node_store_;  // id to node, only for buffered page
   std::list<frame_k> new_node;     // to maintain a good list, we need binary search to sort timestamp
   std::list<frame_k> cached_node;  // we also need a total record
-  size_t current_timestamp_{0};    // current timestamp you know that.
+  size_t current_timestamp_{0};    // current timestamp you know that. update when access or insert
   size_t curr_size_{0};
   size_t replacer_size_;  // capacity
   size_t k_;

@@ -41,7 +41,8 @@ auto DeleteExecutor::Next([[maybe_unused]] Tuple *tuple, RID *rid) -> bool {
   // child_executor find next tuple
   while (child_executor_->Next(&child_tuple, &child_rid)) {
     count++;
-
+    // update table mark
+    table_info->table_->UpdateTupleMeta(TupleMeta{0, true}, child_rid);
     for (auto &index_info : indexes) {
       auto index = index_info->index_.get();
       auto key_attrs = index_info->index_->GetKeyAttrs();
